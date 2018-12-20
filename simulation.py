@@ -52,12 +52,12 @@ def main():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    breite = int(config['STADT']['WIDTH'])
-    hoehe = int(config['STADT']['HEIGHT'])
-    line_distance = int(config['VISUALISIERUNG']['LINE_DISTANCE'])
-    theta1 = int(config['SIMULATION']['THETA1'])
-    theta2 = float(config['SIMULATION']['THETA2'])
-    automat = zellulaererAutomat(breite, hoehe, theta1, theta2)
+    breite = int(config['STADT']['breite'])
+    hoehe = int(config['STADT']['hoehe'])
+    line_distance = int(config['VISUALISIERUNG']['line_distance'])
+    anzahlMobilePolizei = int(config['SIMULATION']['anzahlMobilePolizei'])
+    anzahlEinbrecher = int(config['STADT']['anzahlEinbrecher'])
+    automat = zellulaererAutomat(breite, hoehe, anzahlMobilePolizei, anzahlEinbrecher)
 
     master = Tk()
     

@@ -5,50 +5,52 @@ class zelle:
     score = 0
     t = 0
 	
-    def __init__(self, theta1, theta2, haus):     
+    def __init__(self):     
         """
-        Input:
-            theta1: Einbruchsschwellwert
-            theta2: Gefährdungsschwellwert
-            isHaus: Haus oder Straße
+            festlegen des typs der Zelle
         """
-        self.theta1 = theta1
-        self.theta2 = theta2
-        self.haus = haus
-        
-        random.seed()
-        self.einbruchVorXTagen = 100
-        self.sicherheitsausstattung = random.randrange(-1,2)        #1-low      0-medium    (-1)-high
-        self.optik = random.randrange(0,2)                          #0-hetero   1-homo
-        self.hausnummer = random.randrange(0,2)                     #0-odd      1-even
-##        self.erreichbarkeit = random.randrange(-1,2)                #1-high     0-medium    (-1)-low
-        self.polizeiaktivität = random.randrange(-1,2)              #1-low      0-medium    (-1)-high
+        pass
 
     def setErreichbarkeit(self, value):
         self.erreichbarkeit = value
 
-    def isHaus(self):
+    def setPolizeiwacheEntfernung(self, value):
+        self.polizeiwache_entfernung = value
+
+    def setTrueRepeatRisiko(self, value):
+        self.trueRepeatRisiko = value
+
+    def setNearRepeatRisiko(self, value):
+        self.nearRepeatRisiko = value
+
+    def getTyp(self):
         """
         Returns:
-            bool: ist diese Zelle ein Haus
+            string: typ dieser Zelle
         """
-        return self.haus
+        return self.typ
 
     def updateScore(self):
-        self.score = 3.0/self.einbruchVorXTagen + self.sicherheitsausstattung + self.optik + self.erreichbarkeit + self.polizeiaktivität #+ self.hausnummer
+        #max 16
+        #2 + 3 + 3 + 3 + 2 + 3 + (10)/3.33
+        #min 0.33
+        #0 + 0 + 0 + 0 + 0 + 0 + 1/3.33
+        self.score = self.trueRepeatRisiko + self.nearRepeatRisiko + self.sicherheitsausstattung + self.interesse + self.erreichbarkeit + self.polizeiaktivität + self.polizeiwache_entfernung/3.33
 
     def step(self):
         self.t += 0 
-        if (self.t == 5):
-            updateSicherheit(-1)
-            updatePolizeiaktivität(-1)
-        if (self.t == 20):
-            updateSicherheit(-1)
-            updatePolizeiaktivität(-1)
+        if (self.trueRepeatRisiko > 0):
+            setTrueRepeatRisiko(self, 2 * e^-((t-2)/10)^(2) )       #true - repeat
+            
+        if (self.neareRepeatRisiko > 0):
+            if (random.uniform(0,1) > 0.2):
+                updateNearRepeatRisiko(-0.5)                        #near - repeat
+        if (random.uniform(0,1) > 0.01):
+            updateInteresse(self, 0.5)
             
     def einbruch(self):
-        self.einbruchVorXTagen = 0
         self.t = 0
+        updateInteresse(-2)
 
     def updateSicherheit(self, amount):
         """
@@ -60,24 +62,29 @@ class zelle:
             self.sicherheitsausstattung = 1
         elif (self.sicherheitsausstattung <= -1):
             self.sicherheitsausstattung = -1
-        
 
-    def updatePolizeiaktivität(self, amount):
+    def updateNearRepeatRisiko(self, amount):
+        """
+        Input:
+            amount: der um zu verändernde Wert(positiv)
+        """
+        self.repeatRisiko += amount
+        if (self.sicherheitsausstattung >= 3):
+            self.sicherheitsausstattung = 3
+        elif (self.sicherheitsausstattung <= 0):
+            self.sicherheitsausstattung = 0
+
+    def updateInteresse(self, amount):
         """
         Input:
             amount: der um zu verändernde Wert
         """
-        self.polizeiaktivität += amount
-        if (self.polizeiaktivität >= 1):
-            self.polizeiaktivität = 1
-        elif (self.polizeiaktivität <= -1):
-            self.polizeiaktivität = -1
-
-    def getStatus(self):
-        if (self.score >= self.theta1):
-            return "red"
-        elif (self.score >= self.theta2):
-            return "yellow"
-        else:
-            return "green"
+        self.interesse += amount
+        if (self.interesse >= 3):
+            self.interesse = 3
+        elif (self.interesse <= 0):
+            self.interesse = 0
+            
+    def getScore(self):
+        return self.score
         
