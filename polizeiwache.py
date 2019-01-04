@@ -1,9 +1,9 @@
-import random
-from zelle import *
+from Zelle import *
 
-class polizeiwoche(zelle):
-	
-    def __init__(self):     
+
+class Polizeiwache(Zelle):
+
+    def __init__(self):
         self.typ = "polizeiwache"
         
         random.seed()
@@ -14,10 +14,7 @@ class polizeiwoche(zelle):
     def setPolizeiwacheEntfernung(self, value):
         pass
 
-    def setTrueRepeatRisiko(self, value):
-        pass
-
-    def setNearRepeatRisiko(self, value):
+    def setRepeatRisiko(self, value):
         pass
     
     def updateScore(self):
@@ -32,7 +29,7 @@ class polizeiwoche(zelle):
     def updateSicherheit(self, amount):
         pass
 
-    def updateNearRepeatRisiko(self, amount):
+    def updateRepeatRisiko(self, amount):
         pass
 
     def updateInteresse(self, amount):

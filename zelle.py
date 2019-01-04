@@ -1,11 +1,12 @@
 import random
 
-class zelle:
+
+class Zelle:
     
     score = 0
     t = 0
-	
-    def __init__(self):     
+
+    def __init__(self):
         """
             festlegen des typs der Zelle
         """
@@ -15,13 +16,13 @@ class zelle:
         self.erreichbarkeit = value
 
     def setPolizeiwacheEntfernung(self, value):
-        self.polizeiwache_entfernung = value
+        self.polizeiwacheEntfernung = value
 
-    def setTrueRepeatRisiko(self, value):
-        self.trueRepeatRisiko = value
+    def setPolizeiMobilEntfernung(self, value):
+        self.polizeiaktivität = value
 
-    def setNearRepeatRisiko(self, value):
-        self.nearRepeatRisiko = value
+    def setRepeatRisiko(self, value):
+        self.repeatRisiko = value
 
     def getTyp(self):
         """
@@ -30,27 +31,29 @@ class zelle:
         """
         return self.typ
 
-    def updateScore(self):
-        #max 16
-        #2 + 3 + 3 + 3 + 2 + 3 + (10)/3.33
-        #min 0.33
-        #0 + 0 + 0 + 0 + 0 + 0 + 1/3.33
-        self.score = self.trueRepeatRisiko + self.nearRepeatRisiko + self.sicherheitsausstattung + self.interesse + self.erreichbarkeit + self.polizeiaktivität + self.polizeiwache_entfernung/3.33
+    def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung):
+        """
+        Input:
+            cRepeat : Konstante Repeat-Risiko
+            cSicherheit : Konstante Sicherheitsausstattung
+            cInteresse : Konstante Interesse
+            cErreichbarkeit : Konstante Erreichbarkeit
+            cPolizeiAktivität : Konstante Polizeiaktivität
+            cPolizeiEntfernung : Konstante Polizeiwachen-Entfernung
+        """
+        self.score = cRepeat * self.repeatRisiko + cSicherheit * self.sicherheitsausstattung + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit + cPolizeiAktivität * self.polizeiaktivität + cPolizeiEntfernung * self.polizeiwacheEntfernung
 
     def step(self):
         self.t += 0 
-        if (self.trueRepeatRisiko > 0):
-            setTrueRepeatRisiko(self, 2 * e^-((t-2)/10)^(2) )       #true - repeat
-            
-        if (self.neareRepeatRisiko > 0):
-            if (random.uniform(0,1) > 0.2):
-                updateNearRepeatRisiko(-0.5)                        #near - repeat
-        if (random.uniform(0,1) > 0.01):
-            updateInteresse(self, 0.5)
+        if (self.repeatRisiko > 0):
+            if (random.uniform(0,1) < 0.2):
+                self.updateRepeatRisiko(-0.15)                       #near - repeat
+        if (random.uniform(0,1) < 0.01):
+            self.updateInteresse(0.1)
             
     def einbruch(self):
         self.t = 0
-        updateInteresse(-2)
+        self.updateInteresse(-1)
 
     def updateSicherheit(self, amount):
         """
@@ -58,21 +61,21 @@ class zelle:
             amount: der um zu verändernde Wert
         """
         self.sicherheitsausstattung += amount
-        if (self.sicherheitsausstattung >= 1):
+        if self.sicherheitsausstattung >= 1:
             self.sicherheitsausstattung = 1
-        elif (self.sicherheitsausstattung <= -1):
-            self.sicherheitsausstattung = -1
+        elif self.sicherheitsausstattung <= 0:
+            self.sicherheitsausstattung = 0
 
-    def updateNearRepeatRisiko(self, amount):
+    def updateRepeatRisiko(self, amount):
         """
         Input:
             amount: der um zu verändernde Wert(positiv)
         """
         self.repeatRisiko += amount
-        if (self.sicherheitsausstattung >= 3):
-            self.sicherheitsausstattung = 3
-        elif (self.sicherheitsausstattung <= 0):
-            self.sicherheitsausstattung = 0
+        if self.repeatRisiko >= 1:
+            self.repeatRisiko = 1
+        elif self.repeatRisiko <= 0:
+            self.repeatRisiko = 0
 
     def updateInteresse(self, amount):
         """
@@ -80,11 +83,10 @@ class zelle:
             amount: der um zu verändernde Wert
         """
         self.interesse += amount
-        if (self.interesse >= 3):
-            self.interesse = 3
-        elif (self.interesse <= 0):
+        if self.interesse >= 1:
+            self.interesse = 1
+        elif self.interesse <= 0:
             self.interesse = 0
             
     def getScore(self):
         return self.score
-        

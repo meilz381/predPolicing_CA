@@ -1,9 +1,10 @@
-import random
-from zelle import *
+from Zelle import *
 
-class straße(zelle):
-	
-    def __init__(self):     
+
+class Straße(Zelle):
+
+
+    def __init__(self):
         self.typ = "straße"
         
         random.seed()
@@ -14,10 +15,7 @@ class straße(zelle):
     def setPolizeiwacheEntfernung(self, value):
         pass
 
-    def setTrueRepeatRisiko(self, value):
-        pass
-
-    def setNearRepeatRisiko(self, value):
+    def setRepeatRisiko(self, value):
         pass
     
     def updateScore(self):
@@ -32,7 +30,7 @@ class straße(zelle):
     def updateSicherheit(self, amount):
         pass
 
-    def updateNearRepeatRisiko(self, amount):
+    def updateRepeatRisiko(self, amount):
         pass
 
     def updateInteresse(self, amount):
