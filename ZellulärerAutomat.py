@@ -5,6 +5,10 @@ from Polizeiwache import *
 
 import random
 import math
+import time
+import numpy as np
+import numba
+from numba import jit
 
 
 class ZellulärerAutomat:
@@ -68,7 +72,7 @@ class ZellulärerAutomat:
                     for x in range(-dist, dist + 1):
                         for y in range(-dist, dist + 1):
                             if self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].getTyp() == "polizeiwache":
-                                if math.sqrt(abs(x) + abs(y)) < entfernungWache:
+                                if self.distanz(x,y) < entfernungWache:
                                     entfernungWache = math.sqrt(abs(x) + abs(y))
                     self.Matrix[i][j].setPolizeiwacheEntfernung(1/ entfernungWache)
         
@@ -88,6 +92,12 @@ class ZellulärerAutomat:
             self.mobilePolizei[p] = (xRand, yRand)
         print("Initialisierung beendet")
 
+    @staticmethod
+    @jit(nopython=True)
+    def distanz(x, y):
+        dist = math.sqrt(x**2 + y**2)
+        return dist
+
     def step(self):
         # polizeimobil entfernung
         for i in range(self.hoehe):
@@ -97,8 +107,9 @@ class ZellulärerAutomat:
                     entfernungMobil = 10
                     for m in range(len(self.mobilePolizei)):
                         (x,y) = self.mobilePolizei[m]
-                        if math.sqrt(abs(x)**2 + abs(y)**2) < entfernungMobil:
-                            entfernungMobil = math.sqrt(abs(x) + abs(y))
+                        dist = self.distanz(x, y)
+                        if dist < entfernungMobil:
+                            entfernungMobil = dist
                     self.Matrix[i][j].setPolizeiMobilEntfernung(1/entfernungMobil)
 
         # update score
@@ -108,7 +119,7 @@ class ZellulärerAutomat:
                     z = self.Matrix[i][j]
                     z.step()
                     z.updateScore(self.cRepeat, self.cSicherheit, self.cInteresse, self.cErreichbarkeit, self.cPolizeiAktivität, self.cPolizeiEntfernung)
-                    
+
         # akteur update/bewegung
         ### polizei
         ### randomwalk
@@ -127,14 +138,15 @@ class ZellulärerAutomat:
             (a,b) = self.einbrecher[e]
             for x in range(-dist, dist + 1):
                 for y in range(-dist, dist + 1):
-                    if self.Matrix[(a + x) % self.hoehe][(b + y) % self.breite].getTyp() != "straße" and self.Matrix[(a + x) % self.hoehe][(b + y) % self.breite].getTyp() != "polizeiwache":
-                        if self.Matrix[(a + x) % self.hoehe][(b + y) % self.breite].getScore() > 10:
+                    c = (a + x) % self.hoehe
+                    d = (b + y) % self.breite
+                    if self.Matrix[c][d].getTyp() != "straße" and self.Matrix[c][d].getTyp() != "polizeiwache":
+                        # 6 momentanes max
+                        if self.Matrix[c][d].getScore() > 6:
                             # entfernung berechnen und vergleichen
-                            c = (a + x) % self.hoehe
-                            d = (b + y) % self.breite
                             # RCT
                             if interesse < (self.Matrix[c][d].getScore() / math.sqrt(c**2 + d**2)):
-                                # normalvektor, nord-sued, west-ost
+                                # normalvektor, nord-süd, west-ost
                                 if c != 0:
                                     ns = int(c / abs(c))
                                 else:
@@ -146,27 +158,29 @@ class ZellulärerAutomat:
                                 richtungsvektor = (ns, wo)
                                 interesse = self.Matrix[c][d].getScore() / math.sqrt(c**2 + d**2)
             
-            # Schritt in Richtung Ziel
+            # Schritt in Richtung Ziel, nord-süd, west-ost
             (x,y) = self.einbrecher[e]
             (ns, wo) = richtungsvektor
             self.einbrecher[e] = ((x + ns) % self.hoehe, (y + wo) % self.breite)
-                                
-            ####xy ij fehler
+
+
             # einbruch
             if richtungsvektor == (0,0) and self.Matrix[x][y].getTyp() != "straße" and self.Matrix[x][y].getTyp() != "polizeiwache":
-                # 16 max von score
-                if (self.Matrix[x][y].getScore() / 14) > (abs(random.gauss(0,1))):
+                # 6 max von score
+                if (self.Matrix[x][y].getScore() / 6) > (abs(random.gauss(0,1))):
                     self.Matrix[x][y].einbruch()
-                    # doppelte moore nachberschaft
+                    # doppelte emoor nachberschaft
                     dist = 2
-                    for i in range(-dist,dist + 1):
-                        for j in range(-dist,dist + 1):
-                            if self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].getTyp() != "straße" and self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].getTyp() != "polizeiwache":
-                                if x != 0 and y != 0:
+                    for i in range(-dist, dist + 1):
+                        for j in range(-dist, dist + 1):
+                            c = (i + x) % self.hoehe
+                            d = (j + y) % self.breite
+                            z = self.Matrix[c][d]
+                            if z.getTyp() != "straße" and z.getTyp() != "polizeiwache":
+                                if i != 0 and j != 0:
                                     # nearRepeat > TrueRepeat
-                                    self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].updateSicherheit(math.cos((x-1)/2))
-                                    self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].updateRepeatRisiko(math.cos((x-1)/2))
+                                    z.updateSicherheit(math.cos((x-1)/2))
+                                    z.updateRepeatRisiko(math.cos((x-1)/2))
                                 else:
-                                    self.Matrix[i][j].updateSicherheit(1)
-                                    self.Matrix[(i+x) % self.hoehe][(j+y) % self.breite].updateRepeatRisiko(math.cos((x-1)/2))
-
+                                    z.updateSicherheit(1)
+                                    z.updateRepeatRisiko(math.cos((x-1)/2))

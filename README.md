@@ -1,6 +1,6 @@
 # Zellulärer Automat Simulation
 
-## Features
+## Implementierung
 Moore-Umgebung
 
 Zellulärer Automat mit:
@@ -21,15 +21,15 @@ Zellulärer Automat mit:
 		* steigt probabilistisch
 	* Erreichbarkeit
 		* wird bei Initialisierung berechnet, abhängig von Entfernung zu Straßen
-	* gewerblichem Gebäude
-	* Polizeiwache
-	* Straße
+* gewerblichem Gebäude
+* Polizeiwache
+* Straße
 
 Agenten:
 * Einbrecher 
-** Bewegung gerichtet, nach Score und Entfernung
+    * Bewegung gerichtet, nach Score und Entfernung
 * Polizei
-** Randomwalk
+    * Randomwalk
 
 Topologie(Straßen - US-Style)
 
@@ -37,27 +37,28 @@ Topologie(Straßen - US-Style)
 
 ## TODO
 
+performance verbesserung, numpy, auteilung in sektoren, OO aufheben
+
 anderes grafik framework -> matplotlib
-Bilder als Video / 3D Plot
-Heatmap des Scores
-hover für zellen
 
-performance verbesserung
+Polizei gezielt zu Einbrüchen/ größte positive Änderung des Scores / Gebiet mit höchstem Score
 
-Polizei gezielt zu Einbrüchen
-Diebe aufteilen, nicht gleiche Ziele
+Diebe aufteilen, nicht gleiche Ziele, bei Einbruch Konstante eintragen(2x)
 
 Gesetze
 
 Verhältnis Haus, Gewerbehaus als Konstanten
 
 realistischere Straßen - idee da
+
 Straßenarten
 
 Tag/Nacht
 
-Stadtzentrum - idee(nähe zu zentrum bei step berechnung, berücksichtigen)
+Stadtzentrum - nähe zu zentrum bei step berechnung, berücksichtigen
 -bessere Infrastruktur(straßenart)
 ->bessere Erreichbarkeit
 
-Anordnung der Häuser logisch - idee(nach blocks, vorherigen block berücksichtigen)
+Anordnung der Häuser logisch - nach blocks, vorherigen block berücksichtigen
+
+hover für zellen
