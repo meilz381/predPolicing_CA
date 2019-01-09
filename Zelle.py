@@ -51,9 +51,12 @@ class Zelle:
         self.t += 1
         if (self.repeatRisiko > 0):
             if (random.uniform(0,1) < 0.2):
-                self.updateRepeatRisiko(-0.15)                       #near - repeat
+                self.updateRepeatRisiko(-0.15)
         if (random.uniform(0,1) < 0.01):
             self.updateInteresse(0.1)
+        if (self.t > 7):
+            if (random.uniform(0,1) < 0.2):
+                self.updateSicherheit(-0.15)
             
     def einbruch(self):
         self.t = 0
@@ -91,6 +94,17 @@ class Zelle:
             self.interesse = 1
         elif self.interesse <= 0:
             self.interesse = 0
+
+    def updateSicherheit(self, amount):
+        """
+        Input:
+            amount: der um zu verändernde Wert
+        """
+        self.sicherheitsausstattung += amount
+        if self.sicherheitsausstattung >= 1:
+            self.sicherheitsausstattung = 1
+        elif self.sicherheitsausstattung <= 0:
+            self.sicherheitsausstattung = 0
             
     def getScore(self):
         return self.score

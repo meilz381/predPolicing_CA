@@ -76,7 +76,7 @@ class Simulation:
         # Z = Z[::-1]
         #plt.pcolormesh(self.X, self.Y, Z)
         self.im.set_array(Z)
-        self.im.set_clim(0, self.rangeScore)
+        self.im.set_clim(2, self.rangeScore-1)
         self.im.set_cmap(plt.cm.get_cmap('gnuplot'))
         self.title.set_text("t = {}".format(i))
         return self.im, self.title
