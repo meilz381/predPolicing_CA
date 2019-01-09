@@ -29,36 +29,32 @@ Agenten:
 * Einbrecher 
     * Bewegung gerichtet, nach Score und Entfernung
 * Polizei
-    * Randomwalk
+    * Polizei gezielt zu Einbrüchen
 
 Topologie(Straßen - US-Style)
 
 
 
-## TODO
-
-performance verbesserung, numpy, auteilung in sektoren, OO aufheben
-
-anderes grafik framework -> matplotlib
-
-Polizei gezielt zu Einbrüchen/ größte positive Änderung des Scores / Gebiet mit höchstem Score
-
-Diebe aufteilen, nicht gleiche Ziele, bei Einbruch Konstante eintragen(2x)
+## offene Features
 
 Gesetze
 
-Verhältnis Haus, Gewerbehaus als Konstanten
+Verhältnis Haus, Gewerbliches Gebäude, Polizeistationen als Konstanten
 
-realistischere Straßen - idee da
+Anzahl Bewohner von Haus als zusätzliches Attribut
 
-Straßenarten
+tag/nacht in score funktion für Unterschied gewerbliches/privates Gebäude
 
-Tag/Nacht
+Anordnung der Häuser logisch - nach blocks, vorherigen block berücksichtigen
+
+Straßenarten, Bewegung auf Straßen, Sperrung von Straßen
+
+performance verbesserung - auteilung in sektoren
+
+Diebe aufteilen, nicht gleiche Ziele
 
 Stadtzentrum - nähe zu zentrum bei step berechnung, berücksichtigen
 -bessere Infrastruktur(straßenart)
 ->bessere Erreichbarkeit
-
-Anordnung der Häuser logisch - nach blocks, vorherigen block berücksichtigen
 
 hover für zellen

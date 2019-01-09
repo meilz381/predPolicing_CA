@@ -31,7 +31,7 @@ class Zelle:
         """
         return self.typ
 
-    def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung):
+    def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung, minScore, tag):
         """
         Input:
             cRepeat : Konstante Repeat-Risiko
@@ -40,11 +40,15 @@ class Zelle:
             cErreichbarkeit : Konstante Erreichbarkeit
             cPolizeiAktivität : Konstante Polizeiaktivität
             cPolizeiEntfernung : Konstante Polizeiwachen-Entfernung
+            minScore : minimaler Score
+            tag : boolean Value ob Tag ist
         """
-        self.score = cRepeat * self.repeatRisiko + cSicherheit * self.sicherheitsausstattung + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit + cPolizeiAktivität * self.polizeiaktivität + cPolizeiEntfernung * self.polizeiwacheEntfernung
+        self.score = minScore \
+                     + cRepeat * self.repeatRisiko + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit \
+                     - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + cPolizeiEntfernung * self.polizeiwacheEntfernung)
 
     def step(self):
-        self.t += 0 
+        self.t += 1
         if (self.repeatRisiko > 0):
             if (random.uniform(0,1) < 0.2):
                 self.updateRepeatRisiko(-0.15)                       #near - repeat
