@@ -218,7 +218,7 @@ class ZellulärerAutomat:
             (a,b) = self.einbrecher[e]
             # einbruch
             if richtungsvektor == (0,0) and self.Matrix[a][b].getTyp() != "straße" and self.Matrix[a][b].getTyp() != "polizeiwache":
-                if (self.Matrix[a][b].getScore() / self.rangeScore) > (random.uniform()):
+                if (self.Matrix[a][b].getScore() / self.rangeScore) > (random.uniform(0,1)):
                     self.Matrix[a][b].einbruch()
                     # doppelte moore nachberschaft
                     dist = 2
