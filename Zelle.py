@@ -55,8 +55,8 @@ class Zelle:
         if (random.uniform(0,1) < 0.01):
             self.updateInteresse(0.1)
         if (self.t > 7):
-            if (random.uniform(0,1) < 0.2):
-                self.updateSicherheit(-0.15)
+            if (random.uniform(0,1) < 0.01):
+                self.updateSicherheit(-0.1)
             
     def einbruch(self):
         self.t = 0

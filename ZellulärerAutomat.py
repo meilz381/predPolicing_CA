@@ -110,7 +110,8 @@ class ZellulärerAutomat:
     @staticmethod
     @jit(nopython=True)
     def distanz(x, y):
-        dist = math.sqrt(x**2 + y**2)
+        #dist = math.sqrt(x**2 + y**2)
+        dist = max(abs(x), abs(y))
         return dist
 
     def step(self):
