@@ -39,19 +39,13 @@ Topologie(Straßen - US-Style)
 
 Gesetze
 
-Verhältnis Haus, Gewerbliches Gebäude, Polizeistationen als Konstanten
-
-Anzahl Bewohner von Haus als zusätzliches Attribut
-
-tag/nacht in score funktion für Unterschied gewerbliches/privates Gebäude
-
-Anordnung der Häuser logisch - nach blocks, vorherigen block berücksichtigen
+parameter rausziehen (tagesdauer, sichtreichweite polizei/einbrecher, Betrachtungsreichweite polizeimobil, einwohner, stayparameter polizei/einbrecher, Betrachtungsreichweite einbruch)
 
 Straßenarten, Bewegung auf Straßen, Sperrung von Straßen
 
 performance verbesserung - auteilung in sektoren
 
-Diebe aufteilen, nicht gleiche Ziele
+Einbrecher aufteilen, nicht gleiche Ziele
 
 Stadtzentrum - nähe zu zentrum bei step berechnung, berücksichtigen
 -bessere Infrastruktur(straßenart)

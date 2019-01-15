@@ -1,4 +1,5 @@
 import random
+import math
 
 
 class Zelle:
@@ -31,7 +32,8 @@ class Zelle:
         """
         return self.typ
 
-    def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung, minScore, tag):
+    def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit,
+                    cPolizeiAktivität, cPolizeiEntfernung, minScore, tag, tagdauer):
         """
         Input:
             cRepeat : Konstante Repeat-Risiko
@@ -41,11 +43,19 @@ class Zelle:
             cPolizeiAktivität : Konstante Polizeiaktivität
             cPolizeiEntfernung : Konstante Polizeiwachen-Entfernung
             minScore : minimaler Score
-            tag : boolean Value ob Tag ist
+            tag : Value Tag ist
+            tagdauer : Dauer von Tagen
         """
-        self.score = minScore \
+        if self.typ == "haus":
+            self.score = minScore \
                      + cRepeat * self.repeatRisiko + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit \
-                     - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + cPolizeiEntfernung * self.polizeiwacheEntfernung)
+                     - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + \
+                        cPolizeiEntfernung * self.polizeiwacheEntfernung + self.einwohner * math.cos(tag * 2 * math.pi / tagdauer))
+        elif self.typ == "gewerbliches_gebaeude":
+            self.score = minScore \
+                    + cRepeat * self.repeatRisiko + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit \
+                    - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + \
+                        cPolizeiEntfernung * self.polizeiwacheEntfernung + self.einwohner * math.cos(tag * 2 * math.pi / tagdauer + math.pi))
 
     def step(self):
         self.t += 1
@@ -53,10 +63,10 @@ class Zelle:
             if (random.uniform(0,1) < 0.2):
                 self.updateRepeatRisiko(-0.15)
         if (random.uniform(0,1) < 0.01):
-            self.updateInteresse(0.1)
+            self.updateInteresse(0.01)
         if (self.t > 7):
             if (random.uniform(0,1) < 0.01):
-                self.updateSicherheit(-0.1)
+                self.updateSicherheit(-0.01)
             
     def einbruch(self):
         self.t = 0

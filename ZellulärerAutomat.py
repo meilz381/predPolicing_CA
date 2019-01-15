@@ -13,8 +13,10 @@ from numba import jit
 
 class ZellulärerAutomat:
 
-    def __init__(self, breite, hoehe, anzahlEinbrecher, anzahlMobilePolizei,
-                 cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung, minScore, rangeScore):
+    def __init__(self, breite, hoehe, anzahlMobilePolizei, anzahlEinbrecher,
+                 cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung,
+                 cAttraktivitaetDistanzEinbrecher, cAttraktivitaetDistanzPolizei,
+                 minScore, rangeScore):
         """
         Input:
             breite: Breite des Automats
@@ -27,6 +29,8 @@ class ZellulärerAutomat:
             cErreichbarkeit : Konstante Erreichbarkeit
             cPolizeiAktivität : Konstante Polizeiaktivität
             cPolizeiEntfernung : Konstante Polizeiwachen-Entfernung
+            cAttraktivitaetDistanzEinbrecher : Stärke der Berücksichtigung in Attraktivitätsberechnung
+            cAttraktivitaetDistanzPolizei : Stärke der Berücksichtigung in Attraktivitätsberechnung
             minScore : minimaler Score
             rangeScore : Spanne des Scores
         """
@@ -41,10 +45,14 @@ class ZellulärerAutomat:
         self.cErreichbarkeit = cErreichbarkeit
         self.cPolizeiAktivität = cPolizeiAktivität
         self.cPolizeiEntfernung = cPolizeiEntfernung
+        self.cAttraktivitaetDistanzEinbrecher = cAttraktivitaetDistanzEinbrecher
+        self.cAttraktivitaetDistanzPolizei = cAttraktivitaetDistanzPolizei
+
         self.minScore = minScore
         self.rangeScore = rangeScore
 
-        self.tag = True
+        self.tagdauer = 14
+        self.tag = 0
 
         random.seed()
 
@@ -63,6 +71,15 @@ class ZellulärerAutomat:
                         self.Matrix[i][j] = GewerblichesGebäude()
                     elif r == 499:
                         self.Matrix[i][j] = Polizeiwache()
+
+        # toggle = haus/gewerbe
+        # streak = 0
+        # for every 6*6 maptile:
+        #   change = e^-(0.25(x-6))^2
+        #   stay   = e^-(0.25(x))^2
+        #   value = random.uniform(0,1) * stay - random.uniform(0,1) * change
+        #   <0 stay streak++
+        #   >0 change streak=0
 
         # Erreichbarkeit,PolizeiDistanz berechnen
         for i in range(hoehe):
@@ -114,8 +131,9 @@ class ZellulärerAutomat:
         dist = max(abs(x), abs(y))
         return dist
 
+    # Zentrale Funktion des Zelluläreren Automaten
     def step(self):
-        self.tag = not self.tag
+        self.tag = (self.tag + 1) % self.tagdauer
 
 
         # polizeimobil entfernung
@@ -126,10 +144,12 @@ class ZellulärerAutomat:
                     entfernungMobil = 10
                     for m in range(len(self.mobilePolizei)):
                         (x,y) = self.mobilePolizei[m]
-                        dist = self.distanz(x, y)
+                        min_ns = min((i - x) % self.hoehe, (x - i) % self.hoehe)
+                        min_wo = min((j - y) % self.breite, (y - j) % self.breite)
+                        dist = self.distanz(min_ns, min_wo)
                         if dist < entfernungMobil:
                             entfernungMobil = dist
-                    self.Matrix[i][j].setPolizeiMobilEntfernung(1/(1 + entfernungMobil))
+                    self.Matrix[i][j].setPolizeiMobilEntfernung(1/(1 + entfernungMobil * self.cAttraktivitaetDistanzPolizei))
 
         # update score
         for i in range(self.hoehe):
@@ -137,13 +157,14 @@ class ZellulärerAutomat:
                 if self.Matrix[i][j].getTyp() != "straße" and self.Matrix[i][j].getTyp() != "polizeiwache":
                     z = self.Matrix[i][j]
                     z.step()
-                    z.updateScore(self.cRepeat, self.cSicherheit, self.cInteresse, self.cErreichbarkeit, self.cPolizeiAktivität, self.cPolizeiEntfernung, self.minScore, self.tag)
+                    z.updateScore(self.cRepeat, self.cSicherheit, self.cInteresse, self.cErreichbarkeit,
+                                  self.cPolizeiAktivität, self.cPolizeiEntfernung, self.minScore, self.tag, self.tagdauer)
 
         # akteur update/bewegung
         ### polizei
         ### suche nächstes Haus mit kürzlichem Einbruch
         for m in range(len(self.mobilePolizei)):
-            dist = 6
+            dist = 16
             interesse = 0
             (a, b) = self.mobilePolizei[m]
             for x in range(-dist, dist + 1):
@@ -152,8 +173,8 @@ class ZellulärerAutomat:
                     d = (b + y) % self.breite
                     if self.Matrix[c][d].getTyp() != "straße" and self.Matrix[c][d].getTyp() != "polizeiwache":
                         # RCT
-                        if x != 0 and y != 0:
-                            if interesse < (self.distanz(x , y) / (self.Matrix[c][d].t + 1)):
+                        if (self.distanz(x, y) != 0):
+                            if interesse < (1 / ((self.Matrix[c][d].t + 1) * (self.distanz(x , y) * self.cAttraktivitaetDistanzPolizei))):
                                 # normalvektor, nord-süd, west-ost
                                 if x != 0:
                                     ns = int(x / abs(x))
@@ -164,14 +185,14 @@ class ZellulärerAutomat:
                                 else:
                                     wo = int(0)
                                 richtungsvektor = (ns, wo)
-                                interesse = self.distanz(x , y) / (self.Matrix[c][d].t + 1)
+                                interesse = 1 / ((self.Matrix[c][d].t + 1) * (self.distanz(x , y) * self.cAttraktivitaetDistanzPolizei))
                         else:
-                            if interesse < (0.75 / (self.Matrix[c][d].t + 1)):
+                            if interesse < (1 / ((self.Matrix[c][d].t + 1) * 0.95)):
                                 # normalvektor, nord-süd, west-ost
                                 ns = int(0)
                                 wo = int(0)
                                 richtungsvektor = (ns, wo)
-                                interesse = self.Matrix[c][d].getScore()
+                                interesse = 1 / ((self.Matrix[c][d].t + 1) * 0.95)
 
             # Schritt in Richtung Ziel, nord-süd, west-ost
             (ns, wo) = richtungsvektor
@@ -180,7 +201,7 @@ class ZellulärerAutomat:
         ### einbrecher
         ### suche nächstes haus
         for e in range(len(self.einbrecher)):
-            dist = 6
+            dist = 10
             interesse = 0
             richtungsvektor = (0,0)
             (a,b) = self.einbrecher[e]
@@ -191,8 +212,8 @@ class ZellulärerAutomat:
                     if self.Matrix[c][d].getTyp() != "straße" and self.Matrix[c][d].getTyp() != "polizeiwache":
                         # entfernung berechnen und vergleichen
                         # RCT
-                        if x != 0 and y != 0:
-                            if interesse < (self.Matrix[c][d].getScore() / self.distanz(x , y)):
+                        if (self.distanz(x, y) != 0):
+                            if interesse < (self.Matrix[c][d].getScore() / (self.distanz(x , y) * self.cAttraktivitaetDistanzEinbrecher)):
                                 # normalvektor, nord-süd, west-ost
                                 if x != 0:
                                     ns = int(x / abs(x))
@@ -203,14 +224,14 @@ class ZellulärerAutomat:
                                 else:
                                     wo = int(0)
                                 richtungsvektor = (ns, wo)
-                                interesse = self.Matrix[c][d].getScore() / self.distanz(x , y)
+                                interesse = self.Matrix[c][d].getScore() / (self.distanz(x , y) * self.cAttraktivitaetDistanzEinbrecher)
                         else:
-                            if interesse < (self.Matrix[c][d].getScore() / 0.75):
+                            if interesse < (self.Matrix[c][d].getScore() / (0.95)):
                                 # normalvektor, nord-süd, west-ost
                                 ns = int(0)
                                 wo = int(0)
                                 richtungsvektor = (ns, wo)
-                                interesse = self.Matrix[c][d].getScore() / 0.75
+                                interesse = self.Matrix[c][d].getScore() / (0.95)
             
             # Schritt in Richtung Ziel, nord-süd, west-ost
             (ns, wo) = richtungsvektor

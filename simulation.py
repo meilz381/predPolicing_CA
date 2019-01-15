@@ -39,9 +39,10 @@ class Simulation:
                     scores.append(0)
                 elif m[i][j].getTyp() == "straße":
                     scores.append(0)
-
         Z = np.array(scores)
-
+        Z = np.array(scores).reshape(self.breite, self.hoehe)
+        Z = np.flipud(Z)
+        Z = np.asarray(Z).reshape(-1)
         return Z
 
 
@@ -52,6 +53,8 @@ class Simulation:
 
         self.breite = int(config['STADT']['breite'])
         self.hoehe = int(config['STADT']['hoehe'])
+
+        self.iterationen = int(config['SIMULATION']['iterationen'])
         anzahlMobilePolizei = int(config['SIMULATION']['anzahlMobilePolizei'])
         anzahlEinbrecher = int(config['SIMULATION']['anzahlEinbrecher'])
         cRepeat = float(config['SIMULATION']['cRepeat'])
@@ -60,29 +63,31 @@ class Simulation:
         cErreichbarkeit = float(config['SIMULATION']['cErreichbarkeit'])
         cPolizeiAktivität = float(config['SIMULATION']['cPolizeiAktivitaet'])
         cPolizeiEntfernung = float(config['SIMULATION']['cPolizeiEntfernung'])
+        cAttraktivitaetDistanzEinbrecher = float(config['SIMULATION']['cAttraktivitaetDistanzEinbrecher'])
+        cAttraktivitaetDistanzPolizei = float(config['SIMULATION']['cAttraktivitaetDistanzPolizei'])
 
         self.maxScore = cRepeat + cInteresse + cErreichbarkeit
         self.minScore = 0 - cSicherheit - cPolizeiAktivität - cPolizeiEntfernung
         self.rangeScore = self.maxScore - self.minScore
 
-        self.automat = ZellulärerAutomat(self.breite, self.hoehe, anzahlMobilePolizei, anzahlEinbrecher, cRepeat, cSicherheit,
-                                    cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung, (-1)*self.minScore, self.rangeScore)
+        self.automat = ZellulärerAutomat(self.breite, self.hoehe, anzahlMobilePolizei, anzahlEinbrecher,
+                                    cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung,
+                                    cAttraktivitaetDistanzEinbrecher, cAttraktivitaetDistanzPolizei,
+                                    (-1)*self.minScore, self.rangeScore)
+
+        print (self.maxScore, self.minScore, self.rangeScore)
 
     def animate(self, i):
-        #plt.title("ZellulärerAutomat t = {}".format(i))
         self.automat.step()
         Z = self.generateScoreArray()
-        # Mesh flippen
-        # Z = Z[::-1]
-        #plt.pcolormesh(self.X, self.Y, Z)
         self.im.set_array(Z)
-        self.im.set_clim(2, self.rangeScore-1)
+        self.im.set_clim(0, self.rangeScore * 0.75)
         self.im.set_cmap(plt.cm.get_cmap('gnuplot'))
         self.title.set_text("t = {}".format(i))
         return self.im, self.title
 
     def main(self):
-        durchläufe = 500
+        durchläufe = self.iterationen
 
         # animation
         fig = plt.figure(figsize=(10, 10), dpi=80)
@@ -102,7 +107,7 @@ class Simulation:
 
         fig.colorbar(self.im)
 
-        ani = FuncAnimation(fig, self.animate, frames=range(0,durchläufe), blit=True, interval=1, repeat=False)
+        ani = FuncAnimation(fig, self.animate, frames=range(0,durchläufe), blit=True, interval=100, repeat=False)
 
         plt.show()
 
@@ -116,3 +121,8 @@ class Simulation:
 
 s = Simulation()
 s.main()
+
+"""
+                                print ("!= interesse %1.4f | c %2.0d | d %2.0d | score %2.4f | distanz %2d | t %d" %
+                                       (interesse,c,d,1 / ((self.Matrix[c][d].t + 1) * self.distanz(x , y)), self.distanz(x,y), self.Matrix[c][d].t ) )
+"""
