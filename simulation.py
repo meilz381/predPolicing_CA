@@ -63,28 +63,37 @@ class Simulation:
         cErreichbarkeit = float(config['SIMULATION']['cErreichbarkeit'])
         cPolizeiAktivität = float(config['SIMULATION']['cPolizeiAktivitaet'])
         cPolizeiEntfernung = float(config['SIMULATION']['cPolizeiEntfernung'])
+        cBewohner = float(config['SIMULATION']['cBewohner'])
+
         cAttraktivitaetDistanzEinbrecher = float(config['SIMULATION']['cAttraktivitaetDistanzEinbrecher'])
         cAttraktivitaetDistanzPolizei = float(config['SIMULATION']['cAttraktivitaetDistanzPolizei'])
+
+        cSichtreichweiteEinbrecher = int(config['SIMULATION']['cSichtreichweiteEinbrecher'])
+        cSichtreichweitePolizei = int(config['SIMULATION']['cSichtreichweitePolizei'])
+        cReichweiteEinbruch = int(config['SIMULATION']['cReichweiteEinbruch'])
+
+        cTagDauer = int(config['SIMULATION']['cTagDauer'])
 
         self.maxScore = cRepeat + cInteresse + cErreichbarkeit
         self.minScore = 0 - cSicherheit - cPolizeiAktivität - cPolizeiEntfernung
         self.rangeScore = self.maxScore - self.minScore
 
         self.automat = ZellulärerAutomat(self.breite, self.hoehe, anzahlMobilePolizei, anzahlEinbrecher,
-                                    cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung,
-                                    cAttraktivitaetDistanzEinbrecher, cAttraktivitaetDistanzPolizei,
-                                    (-1)*self.minScore, self.rangeScore)
-
-        print (self.maxScore, self.minScore, self.rangeScore)
+                            cRepeat, cSicherheit, cInteresse, cErreichbarkeit, cPolizeiAktivität, cPolizeiEntfernung,
+                            cBewohner, cTagDauer,
+                            cAttraktivitaetDistanzEinbrecher, cAttraktivitaetDistanzPolizei,
+                            cSichtreichweiteEinbrecher, cSichtreichweitePolizei, cReichweiteEinbruch,
+                            (-1)*self.minScore, self.rangeScore)
 
     def animate(self, i):
         self.automat.step()
         Z = self.generateScoreArray()
         self.im.set_array(Z)
-        self.im.set_clim(0, self.rangeScore * 0.75)
+        self.im.set_clim(1, self.rangeScore * 0.85)
         self.im.set_cmap(plt.cm.get_cmap('gnuplot'))
         self.title.set_text("t = {}".format(i))
         return self.im, self.title
+
 
     def main(self):
         durchläufe = self.iterationen
@@ -109,20 +118,17 @@ class Simulation:
 
         ani = FuncAnimation(fig, self.animate, frames=range(0,durchläufe), blit=True, interval=100, repeat=False)
 
-        plt.show()
+        """
+        # speichern der Animation als Video
+        FFMpegWriter = animation.writers['ffmpeg']
+        metadata = dict(title='Simulation', artist='Matplotlib', comment='')
+        # fps bestimmt speed der animation
+        writer = FFMpegWriter(fps=15, metadata=metadata, bitrate=-1)
+        ani.save('simulation.mp4', writer=writer)
+        """
 
-        # funktioniert nicht atm
-        # FFMpegWriter = animation.writers['ffmpeg']
-        # metadata = dict(title='Simulation', artist='Matplotlib',
-        #                 comment='')
-        # writer = FFMpegWriter(fps=15, metadata=metadata)
-        # ani.save('simulation.mp4', writer=writer)
+        plt.show()
 
 
 s = Simulation()
 s.main()
-
-"""
-                                print ("!= interesse %1.4f | c %2.0d | d %2.0d | score %2.4f | distanz %2d | t %d" %
-                                       (interesse,c,d,1 / ((self.Matrix[c][d].t + 1) * self.distanz(x , y)), self.distanz(x,y), self.Matrix[c][d].t ) )
-"""

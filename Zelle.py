@@ -33,7 +33,7 @@ class Zelle:
         return self.typ
 
     def updateScore(self, cRepeat, cSicherheit, cInteresse, cErreichbarkeit,
-                    cPolizeiAktivität, cPolizeiEntfernung, minScore, tag, tagdauer):
+                    cPolizeiAktivität, cPolizeiEntfernung, cBewohner, tagdauer, tag, minScore):
         """
         Input:
             cRepeat : Konstante Repeat-Risiko
@@ -42,20 +42,30 @@ class Zelle:
             cErreichbarkeit : Konstante Erreichbarkeit
             cPolizeiAktivität : Konstante Polizeiaktivität
             cPolizeiEntfernung : Konstante Polizeiwachen-Entfernung
+            cBewohner : Konstante Bewohner
+            cTagDauer : Länge eines Tages
+            tag : Value Tag
             minScore : minimaler Score
-            tag : Value Tag ist
-            tagdauer : Dauer von Tagen
         """
+
         if self.typ == "haus":
             self.score = minScore \
-                     + cRepeat * self.repeatRisiko + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit \
-                     - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + \
-                        cPolizeiEntfernung * self.polizeiwacheEntfernung + self.einwohner * math.cos(tag * 2 * math.pi / tagdauer))
+                     + cRepeat * self.repeatRisiko\
+                     + cInteresse * self.interesse \
+                     + cErreichbarkeit * self.erreichbarkeit \
+                     - (cSicherheit * self.sicherheitsausstattung \
+                        + cPolizeiAktivität * self.polizeiaktivität \
+                        + cPolizeiEntfernung * self.polizeiwacheEntfernung \
+                        + cBewohner * self.einwohner * math.cos(tag * 2 * math.pi / tagdauer))
         elif self.typ == "gewerbliches_gebaeude":
             self.score = minScore \
-                    + cRepeat * self.repeatRisiko + cInteresse * self.interesse + cErreichbarkeit * self.erreichbarkeit \
-                    - (cSicherheit * self.sicherheitsausstattung + cPolizeiAktivität * self.polizeiaktivität + \
-                        cPolizeiEntfernung * self.polizeiwacheEntfernung + self.einwohner * math.cos(tag * 2 * math.pi / tagdauer + math.pi))
+                    + cRepeat * self.repeatRisiko \
+                    + cInteresse * self.interesse \
+                    + cErreichbarkeit * self.erreichbarkeit \
+                    - (cSicherheit * self.sicherheitsausstattung
+                       + cPolizeiAktivität * self.polizeiaktivität
+                       + cPolizeiEntfernung * self.polizeiwacheEntfernung
+                       + cBewohner *self.einwohner * math.cos(tag * 2 * math.pi / tagdauer + math.pi))
 
     def step(self):
         self.t += 1
